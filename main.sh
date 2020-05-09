@@ -50,13 +50,14 @@ function spam_back_until_done () {
   count=0
   while ! pixel_is 876 434 FBC123FF ; do
     echo "Waiting for the ad to be hidden..."
-    if [[ $count > 15 ]]; then
-      echo $count \> 15
+    if [[ $count -gt 15 ]]; then
+      echo "Trying to exit with cross..."
       tap 1350 42
+      sleep 2
+      adb shell input keyevent KEYCODE_BACK
     else
       adb shell input keyevent KEYCODE_BACK
     fi
-    sleep 1
     count=$((count+1))
   done
   echo "Ad is hidden"
@@ -70,7 +71,7 @@ function farm () {
   tap 682 216
   echo "Ad launched, sleeping..."
   
-  sleep 20
+  sleep 15
 
   spam_back_until_done
   tap 876 434
