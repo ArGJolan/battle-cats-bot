@@ -1,16 +1,17 @@
 #!/bin/bash
 
-# List all packages
-# adb shell 'pm list packages -f' | sed -e 's/.*=//' | sort
+SLEEP_TIME=25
+RESET=true
+CAT_FOOD=0
 
 function pixel_is () {
   PIXEL_X=$1
   PIXEL_Y=$2
   COLOR=$3
 
-  adb shell screencap -p /sdcard/screen.png > /dev/null && adb pull /sdcard/screen.png > /dev/null
+  adb -s $DEVICE_ID shell screencap -p /sdcard/$DEVICE_ID.png > /dev/null && adb -s $DEVICE_ID pull /sdcard/$DEVICE_ID.png > /dev/null
 
-  if convert screen.png -crop "1x1+${PIXEL_X}+${PIXEL_Y}" txt:- | grep $COLOR > /dev/null ; then
+  if convert $DEVICE_ID.png -crop "1x1+${PIXEL_X}+${PIXEL_Y}" txt:- | grep $COLOR > /dev/null ; then
     return 0
   else
     return 1
@@ -18,92 +19,108 @@ function pixel_is () {
 }
 
 function launch_app () {
-  adb shell monkey -p jp.co.ponos.battlecatsen -c android.intent.category.LAUNCHER 1 > /dev/null 2> /dev/null
+  adb -s $DEVICE_ID shell monkey -p jp.co.ponos.battlecatsen -c android.intent.category.LAUNCHER 1 > /dev/null 2> /dev/null
 }
 
 function quit_app () {
-  adb shell am force-stop jp.co.ponos.battlecatsen > /dev/null 2> /dev/null
+  adb -s $DEVICE_ID shell am force-stop jp.co.ponos.battlecatsen > /dev/null 2> /dev/null
 }
 
 function tap () {
   TAP_X=$1
   TAP_Y=$2
 
-  adb shell input tap $TAP_X $TAP_Y
+  adb -s $DEVICE_ID shell input tap $TAP_X $TAP_Y
 }
 
 function wait_for_cat_food () {
-  while ! pixel_is 1222 700 C12400FF ; do
-    echo "Waiting for cat food to be shown"
+  while ! pixel_is $CATFOOD_X $CATFOOD_Y $CATFOOD_COLOR ; do
+    echo -e "⏳\tWaiting for cat food to be shown"
   done
-  echo "Cat food shown!"
+  echo -e "🍜\tCat food shown!"
 }
 
 function wait_for_cat_food_shop () {
-  while ! pixel_is 682 216 F36906FF ; do
-    echo "Waiting for cat food shop to be shown"
+  while ! pixel_is $CATFOODSHOP_X $CATFOODSHOP_Y $CATFOODSHOP_COLOR ; do
+    echo -e "⏳\tWaiting for cat food shop to be shown"
   done
-  echo "Cat food shop shown!"
+  echo -e "🛒\tCat food shop shown!"
 }
 
 function spam_back_until_done () {
   count=0
-  while ! pixel_is 876 434 FBC123FF ; do
-    echo "Waiting for the ad to be hidden..."
-    if [[ $count -gt 15 ]]; then
-      echo "Trying to exit with cross..."
-      tap 1350 42
-      sleep 2
-      adb shell input keyevent KEYCODE_BACK
-    else
-      adb shell input keyevent KEYCODE_BACK
+  while ! pixel_is $ADSUCCESSOK_X $ADSUCCESSOK_Y $ADSUCCESSOK_COLOR ; do
+    echo -e "⏳\tWaiting for the ad to be hidden..."
+    if [[ $count -gt 20 ]]; then
+      echo -e "🚨\tSomething went wrong"
+      SLEEP_TIME=$((SLEEP_TIME+5))
+      RESET=true
+      return 1
     fi
+    if [[ $count -gt 15 ]]; then
+      echo -e "❌\tTrying to exit with cross..."
+      tap $CROSS_X $CROSS_Y
+      sleep 2
+      adb -s $DEVICE_ID shell input keyevent KEYCODE_BACK
+    else
+      adb -s $DEVICE_ID shell input keyevent KEYCODE_BACK
+    fi
+    sleep 1
     count=$((count+1))
   done
-  echo "Ad is hidden"
+  CAT_FOOD=$((CAT_FOOD+1))
+  echo -e "✅\tCat food aquired ($CAT_FOOD total)!"
 }
 
 function farm () {
-  echo "Farming!"
+  echo -e "🚜\tFarming!"
   wait_for_cat_food
-  tap 1222 700
+  tap $CATFOOD_X $CATFOOD_Y
   wait_for_cat_food_shop
-  tap 682 216
-  echo "Ad launched, sleeping..."
+  tap $CATFOODSHOP_X $CATFOODSHOP_Y
+  echo -e "💸\tAd launched, sleeping ${SLEEP_TIME}s..."
   
-  sleep 15
+  sleep $SLEEP_TIME
 
   spam_back_until_done
-  tap 876 434
-  echo "Cycle done!"
+  tap $ADSUCCESSOK_X $ADSUCCESSOK_Y
 }
 
 function wait_for_intro () {
-  while ! pixel_is 1373 671 FFFFFFFF ; do
-    echo "Waiting for intro..."
+  while ! pixel_is $INTRO_X $INTRO_Y $INTRO_COLOR ; do
+    echo -e "⏳\tWaiting for intro..."
   done
-  echo "Intro is playing!"
+  echo -e "🖥\tIntro is playing!"
 }
 
 function wait_for_menu () {
-  while ! pixel_is 700 437 FFFFFFFF ; do
-    echo "Waiting for menu..."
+  while ! pixel_is $MENU_X $MENU_Y $MENU_COLOR ; do
+    echo -e "⏳\tWaiting for menu..."
   done
-  echo "On main menu!"
+  echo -e "🖥\tOn main menu!"
 }
 
-quit_app
-launch_app
+function init () {
+  echo -e "🔄\tRestarting!"
+  quit_app
+  launch_app
 
-wait_for_intro
-tap 1373 671 # Skip button
+  wait_for_intro
+  tap $INTRO_X $INTRO_Y # Skip button
 
-wait_for_menu
-tap 700 437 # Click play
+  wait_for_menu
+  tap $MENU_X $MENU_Y # Click play
 
-sleep 5
-tap 850 470 # Click on default level
+  sleep 5
+  tap $DEFAULTLEVEL_X $DEFAULTLEVEL_Y # Click on default level
+}
 
 while true ; do
+  if [[ $RESET == "true" ]]; then
+    RESET=false
+    init
+  elif [[ $SLEEP_TIME -gt 25 ]]; then
+    SLEEP_TIME=$((SLEEP_TIME-5))
+  fi
   farm
 done

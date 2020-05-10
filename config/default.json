@@ -1,0 +1,35 @@
+{
+  "intro": {
+    "x": 0,
+    "y": 0,
+    "color": "FFFFFFFF"
+  },
+  "menu": {
+    "x": 0,
+    "y": 0,
+    "color": "FFFFFFFF"
+  },
+  "defaultLevel": {
+    "x": 0,
+    "y": 0
+  },
+  "catFood": {
+    "x": 0,
+    "y": 0,
+    "color": "FFFFFFFF"
+  },
+  "catFoodShop": {
+    "x": 0,
+    "y": 0,
+    "color": "FFFFFFFF"
+  },
+  "cross": {
+    "x": 0,
+    "y": 0
+  },
+  "adSuccessOk": {
+    "x": 0,
+    "y": 0,
+    "color": "FFFFFFFF"
+  }
+}
