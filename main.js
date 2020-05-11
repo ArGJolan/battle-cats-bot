@@ -1,4 +1,4 @@
-// Cuz I'm not good enough with bash scripting
+// Cuz I'm not good enough
 const cp = require('child_process')
 
 const {
