@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <style>
+    body, html, #app {
+      height: 100%
+    }
+    header {
+      padding: .5rem;
+      border: 1px solid #CCCCCC;
+    }
+    .my5 {
+      margin-top: .5rem;
+      margin-bottom: .5rem;
+    }
+    .my10 {
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+    .mx5 {
+      margin-left: .5rem;
+      margin-right: .5rem;
+    }
+    .mx10 {
+      margin-left: 1rem;
+      margin-right: 1rem;
+    }
+    .anchor-bottom {
+      position: absolute;
+      bottom: 0;
+    }
+  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="favicon.png"/>
+    <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-exp.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/spectre.css/dist/spectre-icons.min.css">
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+  <title>Battle Cats Bot</title>
+</head>
+<body>
+  <div id="app">
+    <header class="navbar">
+      <section class="navbar-section">
+        <a href="/" class="navbar-brand mr-2">Battle Cats Bot</a>
+      </section>
+      <section class="navbar-section">
+      </section>
+    </header>
+
+    <div class="container my10">
+      <div class="columns">
+        <div class="column col-1"></div>
+        <div v-for="bot of bots" class="column col-5">
+          <pre style="height: 10rem;overflow-x:scroll;border: solid 1px #DDD;padding:1rem;">{{ currentText[bot] || 'No log for now' }}</pre>
+          <img :src="currentPicture[bot]" style="width:100%"/>
+          <div style="text-align: center;margin: 0 auto;font-style: italic;color: #AAA;">{{ bot }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    new Vue({
+      el: '#app',
+      data () {
+        return {
+          timer: 0,
+          bots: ['192.168.1.65:5555', '192.168.1.82:5555'],
+          currentText: {}
+        }
+      },
+      computed: {
+        currentPicture() {
+          const result = {}
+          for (let bot of this.bots) {
+            result[bot] = `/${bot}.png/?${this.timer}`
+          }
+          return result
+        },
+      },
+      methods: {
+        clock() {
+          setInterval(() => {
+            this.timer = Math.floor(Math.random() * 1000000);
+            for (let bot of this.bots) {
+              axios.get(`/${bot}.full.logs/?${this.timer}`).then(response => this.currentText[bot] = response.data.split('\n').filter(line => line).reverse().join('\n'))
+            }
+          }, 1000)
+        }
+      },
+      mounted () {
+        this.clock();
+      }
+    })
+  </script>
+</body>
+</html>
