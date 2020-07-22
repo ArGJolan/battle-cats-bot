@@ -1,0 +1,44 @@
+{
+  "intro": {
+    "x": 1373,
+    "y": 671,
+    "color": "FFFFFFFF"
+  },
+  "menu": {
+    "x": 700,
+    "y": 437,
+    "color": "FFFFFFFF"
+  },
+  "defaultLevel": {
+    "x": 850,
+    "y": 470
+  },
+  "catFood": {
+    "x": 1222,
+    "y": 700,
+    "color": "C12400FF"
+  },
+  "catFoodShop": {
+    "x": 868,
+    "y": 194,
+    "color": "F78E0DFF"
+  },
+  "cross": {
+    "x": 1350,
+    "y": 42
+  },
+  "adSuccessOk": {
+    "x": 876,
+    "y": 434,
+    "color": "FBC123FF"
+  },
+  "annoyingAds": [
+    {
+      "scope": "30x30+1066+465",
+      "color": "3E82F7FF",
+      "minimum": "300",
+      "x": 1066,
+      "y": 465
+    }
+  ]
+}
